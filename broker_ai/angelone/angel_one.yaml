@@ -1,0 +1,16 @@
+orders:
+  status: status
+order_place:
+  symbol: tradingsymbol
+  side: transactiontype
+  token: symboltoken
+  order_type: ordertype
+  product: producttype
+  trigger_price: triggerprice
+order_modify:
+  symbol: tradingsymbol
+  side: transactiontype
+  token: symboltoken
+  order_type: ordertype
+  product: producttype
+  trigger_price: triggerprice

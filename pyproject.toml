@@ -1,0 +1,11 @@
+[project]
+name = 'broker-ai'
+version = '0.1.0'
+description = 'Broker-agnostic trading symbols and websocket'
+requires-python = '>=3.10'
+dependencies = [
+    'pandas',
+    'pyyaml',
+    'requests',
+    'websocket-client',
+]

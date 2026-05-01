@@ -1,0 +1,40 @@
+# Delta Exchange Symbol Configuration
+# https://www.delta.exchange
+# API: https://api.delta.exchange/v2/products
+
+# Crypto exchange
+exchange_type: crypto
+
+# API endpoint for downloading symbols
+download_url: 'https://api.delta.exchange/v2/products'
+
+# Column mapping to standard Symbol columns
+normalize:
+  symbol: tradingsymbol
+  id: token
+  strike_price: strike
+  settlement_time: expiry_date
+  contract_value: lot_size
+
+# Map contract_type to option_type
+option_type_map:
+  call_options: CE
+  put_options: PE
+
+# Parse expiry from settlement_time format
+# settlement_time: '2026-05-01T12:00:00Z' -> '01MAY2026'
+expiry_format: '%d%b%Y'
+
+# Websocket token format
+# Delta Exchange uses integer ID directly
+ws_token_format: '{token}'
+
+# Parse tradingsymbol format: C-BTC-84000-010526
+# C = Call, P = Put, BTC = underlying, 84000 = strike, 010526 = DDMMYY
+tradingsymbol_format: '{type}-{underlying}-{strike}-{date}'
+
+# Underlying assets
+underlyings:
+  - BTC
+  - ETH
+  - SOL
