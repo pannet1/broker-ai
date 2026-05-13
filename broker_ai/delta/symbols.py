@@ -1,15 +1,16 @@
 from __future__ import annotations
+from typing import Literal
 import pandas as pd
 from datetime import datetime
 import os
 import yaml
 import requests
 
-from broker_ai.symbols import Symbols, ExchangeLiteral, OptionsLiteral, Symbol as SymbolType, DEPTH
+DEPTH = 25
 
 
-class Symbol(Symbols):
-    def __init__(self, exchange: ExchangeLiteral, symbol: str, data_path: str | None = None):
+class Symbol:
+    def __init__(self, exchange: str, symbol: str, data_path: str | None = None):
         self.exchange = exchange
         self.symbol = symbol
         self.diff: int = 0
@@ -136,7 +137,7 @@ class Symbol(Symbols):
         min_diff = valid_diffs.min() if len(valid_diffs) > 0 else None
         self.diff = int(min_diff) if min_diff is not None and min_diff > 0 else 100
 
-    def find(self, key: str) -> str | int | ExchangeLiteral | None:
+    def find(self, key: str) -> str | int | None:
         '''Get value for key, filtered by exchange and symbol (underlying).'''
         df = self.df[(self.df['underlying'] == self.symbol)]
         
@@ -166,8 +167,8 @@ class Symbol(Symbols):
         self,
         ltp: float,
         distance: int,
-        c_or_p: OptionsLiteral,
-    ) -> list[SymbolType]:
+        c_or_p: Literal["CE", "PE"],
+    ) -> list[dict]:
         '''Get rows by distance from ATM.'''
         atm = self.atm_strike(ltp)
         target_strike = atm + (distance * self.diff) if c_or_p == 'CE' else atm - (distance * self.diff)
@@ -185,8 +186,8 @@ class Symbol(Symbols):
     def get_atm_rows(
         self,
         ltp: float,
-        c_or_p: OptionsLiteral,
-    ) -> list[SymbolType]:
+        c_or_p: Literal["CE", "PE"],
+    ) -> list[dict]:
         '''Get DEPTH rows on each side of ATM.'''
         atm = self.atm_strike(ltp)
         
@@ -209,11 +210,11 @@ class Symbol(Symbols):
         df = df.drop(columns=['distance', 'underlying', 'contract_value_num'], errors='ignore')
         return df[cols].to_dict('records')
 
-    def to_ws_tokens(self, rows: list[SymbolType]) -> list[str]:
+    def to_ws_tokens(self, rows: list[dict]) -> list[str]:
         '''Convert Symbol rows to ws_tokens (just token ID).'''
         return [str(row['token']) for row in rows]
 
-    def from_ws_token(self, ws_token: str) -> SymbolType | None:
+    def from_ws_token(self, ws_token: str) -> dict | None:
         '''Reverse lookup: ws_token to Symbol.'''
         row = self.df[self.df['token'].astype(str) == str(ws_token)]
         return row.iloc[0].to_dict() if len(row) > 0 else None
@@ -222,8 +223,8 @@ class Symbol(Symbols):
         self,
         quotes: dict[str, float],
         premium: float,
-        c_or_p: OptionsLiteral,
-    ) -> list[SymbolType]:
+        c_or_p: Literal["CE", "PE"],
+    ) -> list[dict]:
         '''Find Symbol(s) with premium closest to target.'''
         filtered = {}
         for ts, ltp in quotes.items():

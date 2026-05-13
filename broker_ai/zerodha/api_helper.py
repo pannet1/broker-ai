@@ -81,7 +81,7 @@ def make_order_place_args(**kwargs) -> Dict:
         price=(lambda x: x if x >= 0 else 0.05)(kwargs.pop("price", 0)),
         trigger_price=(lambda x: x if x >= 0 else 0.05)(kwargs.pop("trigger_price", 0)),
         validity=kwargs.pop("validity", "DAY"),
-        tag=kwargs.pop("tag", "stock_brokers"),
+        tag=kwargs.pop("tag", "broker_ai"),
     )
     # kwargs now contain quantity and exchange
     order_args.update(kwargs)
@@ -133,7 +133,7 @@ def post_order_hook(*orderbook):
             order_list.append(order)
         return order_list
     except Exception as e:
-        print(f"{e} while processing stock_brokers orderbook")
+        print(f"{e} while processing broker_ai orderbook")
         print_exc()
 
 

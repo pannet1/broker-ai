@@ -1,40 +1,60 @@
-# Delta Exchange Symbol Configuration
-# https://www.delta.exchange
-# API: https://api.delta.exchange/v2/products
-
-# Crypto exchange
-exchange_type: crypto
-
-# API endpoint for downloading symbols
-download_url: 'https://api.delta.exchange/v2/products'
-
-# Column mapping to standard Symbol columns
-normalize:
-  symbol: tradingsymbol
-  id: token
-  strike_price: strike
-  settlement_time: expiry_date
-  contract_value: lot_size
-
-# Map contract_type to option_type
+download_url: "https://api.india.delta.exchange/v2/products"
 option_type_map:
   call_options: CE
   put_options: PE
+expiry_format: "%d%b%Y"
 
-# Parse expiry from settlement_time format
-# settlement_time: '2026-05-01T12:00:00Z' -> '01MAY2026'
-expiry_format: '%d%b%Y'
+orders:
+  id: order_id
+  symbol: symbol
+  side: side
+  size: quantity
+  limit_price: price
+  order_type: order_type
+  state: status
+  filled_size: filled_quantity
+  average_price: average_price
+  product_type: product_type
+  created_at: created_at
+  updated_at: updated_at
 
-# Websocket token format
-# Delta Exchange uses integer ID directly
-ws_token_format: '{token}'
+positions:
+  symbol: symbol
+  product_id: product_id
+  quantity: quantity
+  side: side
+  average_price: average_price
+  mark_price: mark_price
+  unrealized_pnl: unrealized_pnl
+  realized_pnl: realized_pnl
+  leverage: leverage
+  margin: margin
+  liquidation_price: liquidation_price
 
-# Parse tradingsymbol format: C-BTC-84000-010526
-# C = Call, P = Put, BTC = underlying, 84000 = strike, 010526 = DDMMYY
-tradingsymbol_format: '{type}-{underlying}-{strike}-{date}'
+trades:
+  id: trade_id
+  order_id: order_id
+  symbol: symbol
+  side: side
+  size: quantity
+  price: price
+  timestamp: created_at
 
-# Underlying assets
-underlyings:
-  - BTC
-  - ETH
-  - SOL
+order_place:
+  symbol: symbol
+  side: side
+  order_type: order_type
+  size: quantity
+  limit_price: price
+  stop_price: trigger_price
+  product_type: product_type
+  client_oid: tag
+
+order_cancel:
+  order_id: order_id
+
+order_modify:
+  order_id: order_id
+  size: quantity
+  limit_price: price
+  stop_price: trigger_price

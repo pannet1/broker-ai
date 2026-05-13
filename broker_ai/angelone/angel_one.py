@@ -1,5 +1,5 @@
 from typing import List, Dict
-from stock_brokers.base import Broker, pre, post
+from broker_ai.base import Broker, pre, post
 from SmartApi import SmartConnect
 import pyotp
 

@@ -4,9 +4,9 @@ from typing import Dict, List
 import pyotp
 import requests
 from kiteconnect import KiteConnect
-from stock_brokers.zerodha.api_helper import get_order_type, get_side
+from broker_ai.zerodha.api_helper import get_order_type, get_side
 
-from stock_brokers.base import Broker, post, pre
+from broker_ai.base import Broker, post, pre
 
 LOGINURL = "https://kite.zerodha.com/api/login"
 TWOFAURL = "https://kite.zerodha.com/api/twofa"
@@ -122,7 +122,7 @@ class Zerodha(Broker):
         if kwargs.get("trigger_price", None):
             order_args["trigger_price"] = kwargs["trigger_price"]
 
-        order_args["tag"] = kwargs.pop("tag", "stock_brokers")
+        order_args["tag"] = kwargs.pop("tag", "broker_ai")
         return self.kite.place_order(**order_args)
 
     @pre

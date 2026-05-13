@@ -1,12 +1,12 @@
-from stock_brokers.finvasia.api_helper import (
+from broker_ai.finvasia.api_helper import (
     ShoonyaApiPy,
     make_order_place_args,
     make_order_modify_args,
     post_order_hook,
     post_trade_hook,
 )
-from stock_brokers.base import Broker, pre, post
-from stock_brokers.finvasia.session import get_auth_code_automated
+from broker_ai.base import Broker, pre, post
+from broker_ai.finvasia.session import get_auth_code_automated
 from typing import List, Dict, Union
 from pyotp import TOTP
 from traceback import print_exc
@@ -147,7 +147,7 @@ class Finvasia(Broker):
             if isinstance(response, dict) and response.get("norenordno") is not None:
                 return response["norenordno"]
         except Exception as err:
-            logging.error(f"{err} in stock_brokers order_place with {kwargs}")
+            logging.error(f"{err} in broker_ai order_place with {kwargs}")
             print_exc()
 
     @post

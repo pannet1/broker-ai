@@ -1,4 +1,4 @@
-from stock_brokers.flattrade.NorenApi import NorenApi
+from broker_ai.flattrade.NorenApi import NorenApi
 import time
 import concurrent.futures
 import pendulum
@@ -80,7 +80,7 @@ def make_order_place_args(**kwargs) -> Dict:
         retention=kwargs.pop("retention", "DAY"),
         quantity=kwargs["quantity"],
         exchange=kwargs["exchange"],
-        remarks=kwargs.pop("remarks", "stock_brokers"),
+        remarks=kwargs.pop("remarks", "broker_ai"),
     )
     if kwargs.get("trigger_price", None):
         order_args["trigger_price"] = kwargs.pop("trigger_price")
@@ -139,7 +139,7 @@ def post_trade_hook(*tradebook):
                     print_exc()
         return trade_list
     except Exception as e:
-        print(f"{e} while processing stock_brokers tradebook")
+        print(f"{e} while processing broker_ai tradebook")
         print_exc()
 
 
@@ -202,7 +202,7 @@ def post_order_hook(*orderbook):
             order_list.append(order)
         return order_list
     except Exception as e:
-        print(f"{e} while processing stock_brokers orderbook")
+        print(f"{e} while processing broker_ai orderbook")
         print_exc()
 
 
