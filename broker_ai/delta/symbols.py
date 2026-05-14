@@ -255,5 +255,5 @@ if __name__ == '__main__':
     print(f'Underlying: {symbols.symbol}')
     print(f'Diff: {symbols.diff}')
     print(f'Rows: {len(symbols.df)}')
-    print(f'Expiry: {symbols.find('expiry_date')}')
-    print(f'First row: {symbols.df.iloc[0].to_dict() if len(symbols.df) > 0 else None}')
+    print(f"Expiry: {symbols.find('expiry_date')}")
+    print(f"First row: {symbols.df.iloc[0].to_dict() if len(symbols.df) > 0 else None}")
