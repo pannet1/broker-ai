@@ -103,15 +103,21 @@ class Symbol:
                 self._derive_diff()
                 return
 
-        raw = self.download()
-        self.df = self.normalize(raw)
-        self._derive_diff()
-        
-        # Keep only standard columns before saving
-        cols = ['exchange', 'tradingsymbol', 'token', 'expiry_date', 'strike', 
-                'option_type', 'lot_size', 'ws_token', 'underlying']
-        self.df[cols].to_csv(data_file, index=False)
-        print(f'Cached to: {data_file}')
+        try:
+            raw = self.download()
+            self.df = self.normalize(raw)
+            self._derive_diff()
+            cols = ['exchange', 'tradingsymbol', 'token', 'expiry_date', 'strike',
+                    'option_type', 'lot_size', 'ws_token', 'underlying']
+            self.df[cols].to_csv(data_file, index=False)
+            print(f'Cached to: {data_file}')
+        except Exception as e:
+            print(f'Download failed: {e}, falling back to cached data')
+            if os.path.exists(data_file):
+                self.df = pd.read_csv(data_file)
+                self._derive_diff()
+            else:
+                raise
 
     def _derive_diff(self):
         '''Derive strike interval from adjacent strikes.'''
