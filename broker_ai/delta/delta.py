@@ -4,6 +4,7 @@ from broker_ai.delta.api_helper import (
     DeltaAPI,
     make_order_place_args,
     make_order_modify_args,
+    non_shrinking,
     post_order_hook,
     post_trade_hook,
 )
@@ -49,11 +50,12 @@ class Delta(Broker):
             return None
 
     @property
+    @non_shrinking
     @post
     def orders(self) -> List[Dict]:
-        """Get all orders (cached — never shrinks)"""
+        """Get all orders"""
         try:
-            orderbook = self.broker.get_cached_orders()
+            orderbook = self.broker.get_active_orders()
             if not orderbook or len(orderbook) == 0:
                 return [{}]
             return post_order_hook(*orderbook)
@@ -63,11 +65,12 @@ class Delta(Broker):
             return [{}]
 
     @property
+    @non_shrinking
     @post
     def trades(self) -> List[Dict]:
-        """Get all trades (cached — never shrinks)"""
+        """Get all trades"""
         try:
-            tradebook = self.broker.get_cached_fills()
+            tradebook = self.broker.get_fills()
             if not tradebook or len(tradebook) == 0:
                 return []
             return post_trade_hook(*tradebook)
@@ -77,11 +80,12 @@ class Delta(Broker):
             return []
 
     @property
+    @non_shrinking
     @post
     def positions(self) -> List[Dict]:
-        """Get all positions (cached — never shrinks)"""
+        """Get all positions"""
         try:
-            positionbook = self.broker.get_cached_positions()
+            positionbook = self.broker.get_positions()
             
             if not positionbook or len(positionbook) == 0:
                 return [{}]
