@@ -25,6 +25,29 @@ class Symbol:
         
         self._load_config()
         self.load()
+        self._cached_date = datetime.today().date()
+
+    def _refresh_on_date_change(self) -> None:
+        today = datetime.today().date()
+        if today == self._cached_date:
+            return
+        self._cached_date = today
+        data_file = os.path.join(self.data_path, f'{self.exchange}_{self.symbol}.csv')
+        if os.path.exists(data_file):
+            mtime = datetime.fromtimestamp(os.path.getmtime(data_file)).date()
+            if mtime == today:
+                self.df = pd.read_csv(data_file)
+                self._derive_diff()
+                return
+        try:
+            raw = self.download()
+            self.df = self.normalize(raw)
+            self._derive_diff()
+            cols = ['exchange', 'tradingsymbol', 'token', 'expiry_date', 'strike',
+                    'option_type', 'lot_size', 'ws_token', 'underlying']
+            self.df[cols].to_csv(data_file, index=False)
+        except Exception as e:
+            print(f'Refresh failed: {e}, using existing data')
 
     def _load_config(self):
         '''Load yaml config.'''
@@ -145,6 +168,7 @@ class Symbol:
 
     def find(self, key: str) -> str | int | None:
         '''Get value for key, filtered by exchange and symbol (underlying).'''
+        self._refresh_on_date_change()
         df = self.df[(self.df['underlying'] == self.symbol)]
         
         if key == 'expiry_date':
@@ -176,6 +200,7 @@ class Symbol:
         c_or_p: Literal["CE", "PE"],
     ) -> list[dict]:
         '''Get rows by distance from ATM.'''
+        self._refresh_on_date_change()
         atm = self.atm_strike(ltp)
         target_strike = atm + (distance * self.diff) if c_or_p == 'CE' else atm - (distance * self.diff)
         
