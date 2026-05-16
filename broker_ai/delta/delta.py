@@ -51,9 +51,9 @@ class Delta(Broker):
     @property
     @post
     def orders(self) -> List[Dict]:
-        """Get all orders"""
+        """Get all orders (cached — never shrinks)"""
         try:
-            orderbook = self.broker.get_active_orders()
+            orderbook = self.broker.get_cached_orders()
             if not orderbook or len(orderbook) == 0:
                 return [{}]
             return post_order_hook(*orderbook)
@@ -65,9 +65,9 @@ class Delta(Broker):
     @property
     @post
     def trades(self) -> List[Dict]:
-        """Get all trades"""
+        """Get all trades (cached — never shrinks)"""
         try:
-            tradebook = self.broker.get_fills()
+            tradebook = self.broker.get_cached_fills()
             if not tradebook or len(tradebook) == 0:
                 return []
             return post_trade_hook(*tradebook)
@@ -79,9 +79,9 @@ class Delta(Broker):
     @property
     @post
     def positions(self) -> List[Dict]:
-        """Get all positions"""
+        """Get all positions (cached — never shrinks)"""
         try:
-            positionbook = self.broker.get_positions()
+            positionbook = self.broker.get_cached_positions()
             
             if not positionbook or len(positionbook) == 0:
                 return [{}]

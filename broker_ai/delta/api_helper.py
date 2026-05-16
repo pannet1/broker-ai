@@ -179,6 +179,9 @@ class DeltaAPI:
         self.api_secret = api_secret
         self.base_url = base_url
         self.session = requests.Session()
+        self._cached_orders: list = []
+        self._cached_trades: list = []
+        self._cached_positions: list = []
     
     def _generate_signature(self, method: str, path: str, query_string: str = "", payload: str = "") -> str:
         """Generate signature for authentication"""
@@ -262,6 +265,12 @@ class DeltaAPI:
         if product_id:
             params["product_id"] = product_id
         return self._request("GET", "/v2/orders", params=params)
+
+    def get_cached_orders(self, product_id: Optional[int] = None, state: str = "open") -> list:
+        result = self.get_active_orders(product_id=product_id, state=state)
+        if isinstance(result, list) and len(result) >= len(self._cached_orders):
+            self._cached_orders = list(result)
+        return list(self._cached_orders)
     
     def get_order_history(self, product_id: Optional[int] = None, start_time: Optional[int] = None, end_time: Optional[int] = None) -> list:
         """Get order history"""
@@ -291,6 +300,12 @@ class DeltaAPI:
     def get_positions(self) -> list:
         """Get positions"""
         return self._request("GET", "/v2/positions")
+
+    def get_cached_positions(self) -> list:
+        result = self.get_positions()
+        if isinstance(result, list) and len(result) >= len(self._cached_positions):
+            self._cached_positions = list(result)
+        return list(self._cached_positions)
     
     def get_position(self, product_id: int) -> Dict:
         """Get specific position"""
@@ -310,6 +325,12 @@ class DeltaAPI:
         if end_time:
             params["end_time"] = end_time
         return self._request("GET", "/v2/fills", params=params)
+
+    def get_cached_fills(self) -> list:
+        result = self.get_fills()
+        if isinstance(result, list) and len(result) >= len(self._cached_trades):
+            self._cached_trades = list(result)
+        return list(self._cached_trades)
     
     def get_historical_candles(
         self,
