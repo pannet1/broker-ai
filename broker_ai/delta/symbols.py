@@ -46,7 +46,7 @@ class Symbol:
             raise ValueError('download_url not configured in delta.yaml')
         
         print(f'Downloading: {self._download_url}')
-        response = requests.get(self._download_url)
+        response = requests.get(self._download_url, timeout=15)
         data = response.json()
         return data.get('result', [])
 
