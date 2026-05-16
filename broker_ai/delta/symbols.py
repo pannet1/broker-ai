@@ -24,8 +24,8 @@ class Symbol:
             self.data_path = data_path
         
         self._load_config()
-        self.load()
         self._cached_date = datetime.today().date()
+        self.load()
 
     def _refresh_on_date_change(self) -> None:
         today = datetime.today().date()
