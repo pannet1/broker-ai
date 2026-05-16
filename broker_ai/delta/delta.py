@@ -4,7 +4,6 @@ from broker_ai.delta.api_helper import (
     DeltaAPI,
     make_order_place_args,
     make_order_modify_args,
-    non_shrinking,
     post_order_hook,
     post_trade_hook,
 )
@@ -50,7 +49,6 @@ class Delta(Broker):
             return None
 
     @property
-    @non_shrinking
     @post
     def orders(self) -> List[Dict]:
         """Get all orders"""
@@ -65,7 +63,6 @@ class Delta(Broker):
             return [{}]
 
     @property
-    @non_shrinking
     @post
     def trades(self) -> List[Dict]:
         """Get all trades"""
@@ -80,7 +77,6 @@ class Delta(Broker):
             return []
 
     @property
-    @non_shrinking
     @post
     def positions(self) -> List[Dict]:
         """Get all positions"""

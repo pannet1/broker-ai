@@ -28,6 +28,37 @@ def non_shrinking(fetch_fn):
     return wrapper
 
 
+class CachingProxy:
+    """Wraps a broker instance and caches orders/trades/positions so they never shrink."""
+    def __init__(self, broker):
+        self._broker = broker
+        self._cache: dict[str, list] = {"orders": [], "trades": [], "positions": []}
+
+    @property
+    def orders(self):
+        result = self._broker.orders
+        if len(result) >= len(self._cache["orders"]):
+            self._cache["orders"] = result
+        return self._cache["orders"]
+
+    @property
+    def trades(self):
+        result = self._broker.trades
+        if len(result) >= len(self._cache["trades"]):
+            self._cache["trades"] = result
+        return self._cache["trades"]
+
+    @property
+    def positions(self):
+        result = self._broker.positions
+        if len(result) >= len(self._cache["positions"]):
+            self._cache["positions"] = result
+        return self._cache["positions"]
+
+    def __getattr__(self, name):
+        return getattr(self._broker, name)
+
+
 def get_side(side: str) -> str:
     """Convert side to Delta format"""
     side_map = {
