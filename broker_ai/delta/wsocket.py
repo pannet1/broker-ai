@@ -4,8 +4,11 @@ import time
 import hashlib
 import hmac
 import threading
+import logging
 import websocket
 from typing import Callable
+
+log = logging.getLogger(__name__)
 
 
 class Wsocket:
@@ -20,6 +23,8 @@ class Wsocket:
         self._use_private: bool = bool(api_key and api_secret)
         self._public_url = "wss://public-socket.india.delta.exchange"
         self._private_url = "wss://socket.india.delta.exchange"
+        self._subscribed_tokens: set[str] = set()
+        self._reconnect_delay: float = 1.0
 
         self.on_connect: Callable = lambda: None
         self.on_ticks: Callable = lambda ltp: None
@@ -57,7 +62,22 @@ class Wsocket:
             self._ws.close()
         self._connected = False
 
+    def _resubscribe_all(self) -> None:
+        if not self._subscribed_tokens:
+            return
+        ch = "v2/ticker" if self._use_private else "ticker"
+        symbols = list(self._subscribed_tokens)
+        payload = {
+            "type": "subscribe",
+            "payload": {
+                "channels": [{"name": ch, "symbols": symbols}]
+            }
+        }
+        self._send(payload)
+        log.info("Resubscribed %d tokens", len(symbols))
+
     def subscribe(self, tokens: list[str]) -> None:
+        self._subscribed_tokens.update(str(t) for t in tokens)
         ch = "v2/ticker" if self._use_private else "ticker"
         symbols = [str(t) for t in tokens]
         payload = {
@@ -69,6 +89,8 @@ class Wsocket:
         self._send(payload)
 
     def unsubscribe(self, tokens: list[str]) -> None:
+        for t in tokens:
+            self._subscribed_tokens.discard(str(t))
         ch = "v2/ticker" if self._use_private else "ticker"
         symbols = [str(t) for t in tokens]
         payload = {
@@ -107,11 +129,24 @@ class Wsocket:
     def _on_open(self, ws) -> None:
         self._authenticate()
 
+    def _reconnect(self) -> None:
+        if self._should_stop:
+            return
+        delay = self._reconnect_delay
+        log.warning("Reconnecting in %.1fs...", delay)
+        time.sleep(delay)
+        self._reconnect_delay = min(delay * 2, 30.0)
+        self.connect(threaded=True)
+
     def _on_close(self, ws, close_status_code, close_msg) -> None:
         self._connected = False
+        log.warning("WebSocket closed (code=%s msg=%s)", close_status_code, close_msg)
         self.on_close()
+        th = threading.Thread(target=self._reconnect, daemon=True)
+        th.start()
 
     def _on_error(self, ws, error) -> None:
+        log.error("WebSocket error: %s", error)
         self.on_error(str(error))
 
     def _on_message(self, ws, raw: str) -> None:
@@ -125,6 +160,8 @@ class Wsocket:
         if t == "key-auth":
             if msg.get("success"):
                 self._connected = True
+                self._reconnect_delay = 1.0
+                self._resubscribe_all()
                 self.on_connect()
             else:
                 self.on_error(msg.get("message", "auth failed"))
@@ -132,6 +169,7 @@ class Wsocket:
         elif t == "subscriptions":
             if not self._connected:
                 self._connected = True
+                self._reconnect_delay = 1.0
                 self.on_connect()
 
         elif t in ("ticker", "v2/ticker"):
